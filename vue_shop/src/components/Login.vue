@@ -7,6 +7,7 @@
       </div>
       <!-- 表单区域 -->
       <el-form
+        ref="loginFormRef"
         :rules="loginFormRules"
         :model="loginForm"
         label-width="0px"
@@ -27,8 +28,12 @@
         </el-form-item>
         <!-- 按钮区域 -->
         <el-form-item class="btns">
-          <el-button type="primary">登录</el-button>
-          <el-button type="info">重置</el-button>
+          <el-button :plain="true" type="primary" @click="login"
+            >登录</el-button
+          >
+          <el-button :plain="true" type="info" @click="resetData"
+            >重置</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
@@ -38,7 +43,7 @@
 export default {
   data () {
     return {
-      loginForm: { username: 'zs', password: '1234' },
+      loginForm: { username: 'admin', password: '123456' },
       loginFormRules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -49,6 +54,40 @@ export default {
           { min: 6, max: 8, message: '长度在 6 到 8 个字符', trigger: 'blur' }
         ]
       }
+    }
+  },
+  methods: {
+    resetData () {
+      // console.log(this)
+      this.$refs.loginFormRef.resetFields()
+    },
+    login () {
+      this.$refs.loginFormRef.validate(async valid => {
+        console.log(valid)
+        if (valid) {
+          // const result = await this.$http.post('login', this.loginForm)
+          const { data: res } = await this.$http.post('login', this.loginForm)
+          console.log(res)
+          // console.log(result.data)
+          if (res.meta.status === 200) {
+            console.log('登录成功')
+            this.$message({
+              showClose: true,
+              message: '恭喜你，登录成功了',
+              type: 'success'
+            })
+            window.sessionStorage.setItem('token', res.data.token)
+            this.$router.push('/home')
+          } else {
+            console.log('登录失败了')
+            this.$message({
+              showClose: true,
+              message: '登录失败，请检查用户名或密码',
+              type: 'error'
+            })
+          }
+        }
+      })
     }
   }
 }
